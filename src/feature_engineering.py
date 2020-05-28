@@ -41,20 +41,17 @@ def org_booleans(org_int):
     else:
         return 0
 
-
 def user_type(user):
     if user == 1:
         return 1
     else:
         return 0
 
-
 def has_delivery_method(delivery_method):
     if delivery_method == np.nan or delivery_method == 0 or delivery_method == None:
         return 0
     else:
         return 1
-
 
 def has_org_name(org_name):
     if org_name == np.nan or org_name == None or org_name == "":
