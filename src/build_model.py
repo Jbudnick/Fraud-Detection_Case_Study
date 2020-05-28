@@ -13,12 +13,10 @@ import numpy as np
 from joblib import dump
 import pickle
 
-from imblearn.over_sampling import SMOTE
-
 from feature_engineering import clean_pipeline
 
 def roc():
-    # Plot the ROC
+    # Plot the ROC curve
     fig = plt.figure(figsize=(10,8))
     ax = fig.add_subplot(111)
     ax.plot([0, 1], [0, 1], linestyle='--', lw=2, color='k',
@@ -31,31 +29,10 @@ def roc():
     ax.legend(fontsize=24)
     plt.show()
 
-def random_search(X_train,y_train):
-    
-    n_estimators = [int(x) for x in np.linspace(start = 200, stop = 1000, num = 20)]
-    max_features = ['auto', 'sqrt']
-    max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
-    max_depth.append(None)
-    min_samples_split = [2, 5, 10]
-    min_samples_leaf = [1, 2, 4]
-    bootstrap = [True, False]
-
-    random_grid = {'n_estimators': n_estimators,
-                'max_features': max_features,
-                'max_depth': max_depth,
-                'min_samples_split': min_samples_split,
-                'min_samples_leaf': min_samples_leaf,
-                'bootstrap': bootstrap}
-
-    rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
-    rf_random.fit(X_train, y_train)
-
-    print(rf_random.best_params_)
-
 
 if __name__ == "__main__":
 
+    # Every column in this list will be one-hot-encoded
     one_hot_cols = [
         "domain_country_code",
         "delivery_method",
@@ -63,6 +40,7 @@ if __name__ == "__main__":
         "currency"
     ]
 
+    # Assemble pipeline
     preprocessor = ColumnTransformer(
         transformers=[
             ('text', TfidfVectorizer(), 'description'),
@@ -72,45 +50,33 @@ if __name__ == "__main__":
     pipe = Pipeline(
         steps=[
             ('preprocessor', preprocessor),
-            ('classifier', RandomForestClassifier(n_estimators=100)),
-        ],
+            ('classifier', RandomForestClassifier(n_estimators=368, min_samples_split=2, max_features='sqrt', bootstrap=False)),
+        ]
     )
-    n_estimators = [int(x) for x in np.linspace(start = 200, stop = 1000, num = 20)]
-    max_features = ['auto', 'sqrt']
-    max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
-    max_depth.append(None)
-    min_samples_split = [2, 5, 10]
-    min_samples_leaf = [1, 2, 4]
-    bootstrap = [True, False]
-
-    random_grid = {'classifier__n_estimators': n_estimators,
-                'classifier__max_features': max_features,
-                'classifier__max_depth': max_depth,
-                'classifier__min_samples_split': min_samples_split,
-                'classifier__min_samples_leaf': min_samples_leaf,
-                'classifier__bootstrap': bootstrap}
-    rf_random = RandomizedSearchCV(pipe, param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
   
+    # Load in data
     total_df = pd.read_json('data/data.json')
+
+    # Run whole data through feature engineering pipeline
     clean_df = clean_pipeline(total_df)
+
+    # Split X and y
     X = clean_df.drop(["target"], axis=1)
     y = clean_df["target"]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=123)
-    # X_pre_sample_train, X_test, y_pre_sample_train, y_test = train_test_split(X, y)
-    # X_train, y_train = SMOTE().fit_resample(X_pre_sample_train,y_pre_sample_train)
-    
-    rf_random.fit(X_train, y_train)
-    print(rf_random.best_params_)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=123, stratify=y)
 
+    # Fit training data to pipeline
     pipe.fit(X_train, y_train)
     
+    # Get probailities of fraud
     probs = pipe.predict_proba(X_test)[:, 1]
 
-    theshold = 0.2
+    # Make predictions based on specified threshold
+    threshold = 0.15
+    y_hat = (probs >= threshold).astype(int)
 
-    y_hat = (probs >= theshold).astype(int)
-
+    # Evaluate model
     tn, fp, fn, tp = confusion_matrix(y_test, y_hat).ravel()
 
     print(pd.DataFrame({
@@ -126,8 +92,9 @@ if __name__ == "__main__":
     auc = roc_auc_score(y_test, probs)
     print("AUC:", auc)
 
-    # pipe.fit(X, y)
-    # train_columns = list(X.columns)
-    # with open('models/column_list.pkl', 'wb') as f:
-    #     pickle.dump(train_columns, f)
-    # dump(pipe, 'models/randomforest.joblib')
+    # Fit on whole dataset and save model
+    pipe.fit(X, y)
+    train_columns = list(X.columns)
+    with open('models/column_list.pkl', 'wb') as f:
+        pickle.dump(train_columns, f)
+    dump(pipe, 'models/randomforest.joblib')
