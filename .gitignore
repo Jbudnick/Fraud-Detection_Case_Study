@@ -7,3 +7,4 @@
 .csv
 .zip
 __pycache__
+*.joblib
