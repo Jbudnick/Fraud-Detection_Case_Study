@@ -3,3 +3,7 @@
 .ipynb_checkpoints
 *.bak
 *.swp
+/data
+.csv
+.zip
+__pycache__
