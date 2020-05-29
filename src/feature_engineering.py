@@ -71,7 +71,7 @@ def clean_pipeline(original_df):
     df = original_df.copy()
     if 'acct_type' in df.columns:
         df['target'] = df['acct_type'].apply(is_fraud)
-    df['description'] = df['description'].apply(remove_html_tags)
+    # df['description'] = df['description'].apply(remove_html_tags)
     df['domain_country_code'] = df['email_domain'].apply(get_domain_country_code)
     df['previous_payouts'] = df['previous_payouts'].apply(prev_payout_bool)
     df['suspicious_age'] = df['user_age'].apply(suspicious_age)
@@ -119,7 +119,8 @@ def clean_pipeline(original_df):
         "venue_address",
         # maybe mess with this
         "ticket_types",
-        "payee_name"
+        "payee_name",
+        "num_order"
     ]
 
     df.drop(labels=drop_cols, axis=1, inplace=True, errors='ignore')
