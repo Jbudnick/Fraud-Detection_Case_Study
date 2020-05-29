@@ -29,6 +29,7 @@ def roc():
     ax.legend(fontsize=24)
     plt.show()
 
+<<<<<<< HEAD
 def random_search(X_train,y_train):
     #random search params
     n_estimators = [int(x) for x in np.linspace(start = 200, stop = 1000, num = 20)]
@@ -52,6 +53,8 @@ def random_search(X_train,y_train):
     print(rf_random.best_params_)
     # {'classifier__n_estimators': 368, 'classifier__min_samples_split': 2, 'classifier__min_samples_leaf': 1, 'classifier__max_features': 'sqrt', 'classifier__max_depth': None, 'classifier__bootstrap': False}
 
+=======
+>>>>>>> 308b85c25b9e9cc60b8ad0ac2b6a210a2f429194
 
 if __name__ == "__main__":
 
