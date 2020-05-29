@@ -45,9 +45,9 @@ def get_data():
         1: "Fraud"
     }
 
-    if prob < 0.1:
+    if prob < 0.15:
         risk = "Low"
-    elif prob >= 0.1 and prob <= 0.4:
+    elif prob >= 0.15 and prob <= 0.4:
         risk = "Medium"
     else:
         risk = "High"
@@ -61,8 +61,8 @@ def get_data():
         pass
     else:
         db.new_data.delete_one({"object_id": json_data['object_id']})
-    db_add_string = f"Added to DB with object_id: {json_data['object_id']}"
-    
+    db_add_string = "Added to DB with object_id:" + str(json_data['object_id'])
+
     db.new_data.insert_one(json_data)
 
     data_dict = {
