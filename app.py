@@ -1,13 +1,10 @@
-from urllib.request import urlopen
 from flask import Flask, request, render_template
 import pandas as pd
 import json
 import requests
-import socket
 import time
 from datetime import datetime
 from pymongo import MongoClient
-import requests
 from src.feature_engineering import clean_pipeline
 from src.predict import predict_one
 
