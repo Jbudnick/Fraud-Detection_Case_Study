@@ -13,10 +13,9 @@ import pandas as pd
 import numpy as np
 import json
 
-from feature_engineering import clean_pipeline
+from src.feature_engineering import clean_pipeline
 
-if __name__ == "__main__":
-    
+def predict_one(datapoint_df):
     # Load in model that was created in build_model.py
     pipe = load("models/randomforest.joblib")
     
@@ -25,10 +24,9 @@ if __name__ == "__main__":
         train_columns = pickle.load(f)
 
     # Load example data point
-    df = pd.read_json('example.json')
 
     # Run through feature engineering pipeline
-    df_clean = clean_pipeline(df)
+    df_clean = clean_pipeline(datapoint_df)
 
     # Add columns from original training data to match the structure
     df_clean_structured = pd.DataFrame(df_clean, columns=train_columns)
@@ -40,5 +38,8 @@ if __name__ == "__main__":
     threshold = 0.15
     y_hat = (probs >= threshold).astype(int)
 
-    print("Prediction:", y_hat)
-    print("Probability of Fraud:", probs)
+    return probs[0], y_hat[0]
+
+if __name__ == "__main__":
+    df = pd.read_json('example.json')
+    print(predict_one(df))

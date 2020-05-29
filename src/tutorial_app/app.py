@@ -6,6 +6,10 @@ app = Flask(__name__)
 def api_root():
     return 'Welcome'
 
+@app.route('/hello')
+def api_root():
+    return 'Hello, World!'
+
 
 @app.route('/articles')
 def api_articles():

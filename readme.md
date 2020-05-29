@@ -5,28 +5,46 @@
 
 # Fraud Case Study
 
+
+## Data and Cleaning
+Numerous features were dropped for various reasons. <br/>
+Assumed not to have significant relevance to Fraud and/or would have to be one hot encoded into too many columns: <br/>
+Venue State,Venue name, Has_header, sale_duration, sale_duration2, Venue_latitude, Venue longitude, Venue address*, name_length, name, object_id, listed, num_payouts* (maybe tfidf, org_desc, org_name, ticket_types
+
+Rudundant with other features:
+Venue_country, country
+
+* Asterisk indicates feature may be reconsidered in the future
+
+Unclear what data represents and no clear distinction in target value:
+gts, approx_payout_date, user_created
+
+Feature Engineering:<br/>
+User Age : Changed to binary - 0 or not <br/>
+event_end, event_start, event_published, event_created - Changed into event length <br/>
+Email Domain - Used as country code <br/>
+payee name : Whether a name is specified or not <br/>
+user type - converted to binary, whether 1 or not (highly correlated with fraud) <br/>
+
+## Text Processing Pipeline
+
+## EDA
+Feature usefullness? Why drop?
+Plots of features? I will put that
+
+## Results
+Used random forest model because...
+(Provide link to app when ready)
+
 Deploying flask-
     Got AWS Instance created, 
     Docker image built 
         - having truoble with dockerfile and getting app to run through docker/AWS, 
         - example file doesn't seem to work, keeps timing out, don't understand register URL
 
-postgres/mongo to pull in examples from webserver, make predictions from model off of that, store results in that DB,
-
-Readme
-
-which can be accessed by flask
-
-
-#use link to get new data points?
-#   Web scrape instead of using data included in repo?
-
-#Take first hour, look at data, which columns are useful/dropped
-
-
-# Sam - columns approx payout date to gts
-# Jacob - columns has_analytics to payout type
-# Joe - previous payouts to end
+Set up a Postgres or MongoDB database that will store each example that the script runs on. You should create a database schema that reflects the form of the raw example data and add a column for the predicted probability of fraud.
+    Mongo to pull in examples from webserver, make predictions from model off of that, store results
+    Set up web scraping so that it pull in and saves in Mongo DB, not sure how to pull it into the DF though, or if we just need to be able to run a score method as well in the app. The data will need to be cleaned, probably with beautifulsoup
     
 # {'classifier__n_estimators': 368, 'classifier__min_samples_split': 2, 'classifier__min_samples_leaf': 1, 'classifier__max_features': 'sqrt', 'classifier__max_depth': None, 'classifier__bootstrap': False}
 # len(df['previous_payouts'][1]) == 0
@@ -44,11 +62,7 @@ which can be accessed by flask
     'classifier__max_features': 'sqrt', 'classifier__max_depth': None, 'classifier__bootstrap': False}
 
 #TODO
-    #DATABASE
-        '''
-        Set up a Postgres or MongoDB database that will store each example that the script runs on. 
-        You should create a database schema that reflects the form of the raw example data and add a 
-        column for the predicted probability of fraud.
+
 
         predict.py 
             loads model, loads example(example.json), runs example through feature engineering pipeline,
@@ -60,7 +74,6 @@ which can be accessed by flask
         '''
     #WEB APP
     '''
-        Hello world flask app tutorial?
         
         Set up a route POST /score and have it execute the logic in your prediction script. 
         You should import the script as a module and call functions defined therein. (predict.py)

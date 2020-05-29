@@ -15,7 +15,7 @@ import pickle
 
 from feature_engineering import clean_pipeline
 
-def roc():
+def roc(fpr,tpr,auc):
     # Plot the ROC curve
     fig = plt.figure(figsize=(10,8))
     ax = fig.add_subplot(111)
@@ -27,7 +27,8 @@ def roc():
     ax.set_title("ROC curve", fontsize=24)
     ax.text(0.3, 0.7, " ".join(["AUC:",str(auc.round(3))]), fontsize=20)
     ax.legend(fontsize=24)
-    plt.show()
+    # plt.show()
+    plt.savefig('images/rf_roc.png')
 
 def random_search(X_train,y_train):
     #random search params
@@ -52,6 +53,11 @@ def random_search(X_train,y_train):
     print(rf_random.best_params_)
     # {'classifier__n_estimators': 368, 'classifier__min_samples_split': 2, 'classifier__min_samples_leaf': 1, 'classifier__max_features': 'sqrt', 'classifier__max_depth': None, 'classifier__bootstrap': False}
 
+def update_df_with_new(df):
+    '''
+    Update current df with new data from app feature?
+    '''
+    pass
 
 if __name__ == "__main__":
 
@@ -79,7 +85,7 @@ if __name__ == "__main__":
   
     # Load in data
     total_df = pd.read_json('data/data.json')
-    
+
     # Run whole data through feature engineering pipeline
     clean_df = clean_pipeline(total_df)
 
@@ -101,6 +107,9 @@ if __name__ == "__main__":
 
     # Evaluate model
     tn, fp, fn, tp = confusion_matrix(y_test, y_hat).ravel()
+    fpr = fp/(fp+tn)
+    tpr = tp/(tp+fn)
+    
 
     print(pd.DataFrame({
         "pred:fraud": [tp, fp],
@@ -114,6 +123,7 @@ if __name__ == "__main__":
     fpr, tpr, thresholds = roc_curve(y_test, probs, pos_label=1)
     auc = roc_auc_score(y_test, probs)
     print("AUC:", auc)
+    roc(fpr,tpr,auc)
 
     # Fit on whole dataset and save model
     pipe.fit(X, y)
