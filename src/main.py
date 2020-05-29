@@ -11,4 +11,4 @@ REGISTER_URL = "http://50.17.242.215"
 
 
 #AWS Instance - start Flask app
-app.run(host='50.17.242.215', port = PORT, debug = True)
+app.run(host='0.0.0.0', port = PORT, debug = True)
