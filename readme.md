@@ -1,34 +1,74 @@
-For the next two days we will deal with the entire end to end pipeline of data science through a case study.  We have touched on aspects of this throughout the course but have not yet put all the pieces together.
 
-We will also touch on some new topics including:
-* cloud services including AWS
-* web applications (and the technology of the web)
-* deploying a DS application
-* a touch of data visualization/presentation
+<p>
+<img src="images/CardFraud.jpg" width="600">
+<p>
 
-#### Themes (you will be assessed on this)
+# Fraud Case Study
 
-* Software best practices (proper encapsulation and functions)
-* product focus
-* deploy models
-* project scoping -- independence
+Deploying flask-
+    Got AWS Instance created, 
+    Docker image built 
+        - having truoble with dockerfile and getting app to run through docker/AWS, 
+        - example file doesn't seem to work, keeps timing out, don't understand register URL
 
-#### Rough timeline 
+postgres/mongo to pull in examples from webserver, make predictions from model off of that, store results in that DB,
 
-* Wednesday: Project scoping, Model building, and an intro to Web apps
-* Thursday: Web app and deployment
+Readme
 
-#### Deliverables
+which can be accessed by flask
 
-* model (properly commented and encapsulated on Github with a README)
-* exposed API
-* Data visualization (extra)
 
-#### Assessment
+#use link to get new data points?
+#   Web scrape instead of using data included in repo?
 
-* You will be assessed both on quality and cleanliness of code
-* as well as a well functioning solution
+#Take first hour, look at data, which columns are useful/dropped
 
-#### Notes
 
-* [building your model](model_notes.md): notes on how to get started with the dataset and how to save your model once you've trained it.
+# Sam - columns approx payout date to gts
+# Jacob - columns has_analytics to payout type
+# Joe - previous payouts to end
+    
+# {'classifier__n_estimators': 368, 'classifier__min_samples_split': 2, 'classifier__min_samples_leaf': 1, 'classifier__max_features': 'sqrt', 'classifier__max_depth': None, 'classifier__bootstrap': False}
+# len(df['previous_payouts'][1]) == 0
+# no previous payouts, suspicious
+
+# user age = 0 or <100
+#some outliers with 800+
+
+# user type
+# 70% fraud events user type =1
+# 25% all events user type =1
+
+
+{'classifier__n_estimators': 368, 'classifier__min_samples_split': 2, 'classifier__min_samples_leaf': 1,
+    'classifier__max_features': 'sqrt', 'classifier__max_depth': None, 'classifier__bootstrap': False}
+
+#TODO
+    #DATABASE
+        '''
+        Set up a Postgres or MongoDB database that will store each example that the script runs on. 
+        You should create a database schema that reflects the form of the raw example data and add a 
+        column for the predicted probability of fraud.
+
+        predict.py 
+            loads model, loads example(example.json), runs example through feature engineering pipeline,
+            adds columns from original training data to match the structure,gets probability of fraud,
+            makes prediction based on a specified threshold
+        
+        for each example calculate the probability of fraud and add to database along with event info
+        
+        '''
+    #WEB APP
+    '''
+        Hello world flask app tutorial?
+        
+        Set up a route POST /score and have it execute the logic in your prediction script. 
+        You should import the script as a module and call functions defined therein. (predict.py)
+    There are two things we'll do to make this all more efficient:
+
+We only want to unpickle the model once
+We only want to connect to the database once.
+    '''
+
+Sources:
+https://www.veridiancu.org/news/advice/fraud-101-credit-debit-security
