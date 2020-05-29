@@ -58,11 +58,11 @@ def get_data():
     json_data['prediction_timestamp'] = int(time.time())
 
     if db.new_data.count_documents({"object_id": json_data['object_id']}) == 0:
-        db_add_string = f"Added to DB with object_id: {json_data['object_id']}"
+        pass
     else:
-        db_add_string = f"Object already in DB with object_id: {json_data['object_id']}"
         db.new_data.delete_one({"object_id": json_data['object_id']})
-
+    db_add_string = f"Added to DB with object_id: {json_data['object_id']}"
+    
     db.new_data.insert_one(json_data)
 
     data_dict = {
