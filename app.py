@@ -1,13 +1,10 @@
-from urllib.request import urlopen
 from flask import Flask, request, render_template
 import pandas as pd
 import json
 import requests
-import socket
 import time
 from datetime import datetime
 from pymongo import MongoClient
-import requests
 from src.feature_engineering import clean_pipeline
 from src.predict import predict_one
 
@@ -61,7 +58,7 @@ def get_data():
         pass
     else:
         db.new_data.delete_one({"object_id": json_data['object_id']})
-    db_add_string = f"Added to DB with object_id: {json_data['object_id']}"
+    db_add_string = "Added to DB with object_id: " + json_data['object_id']
     
     db.new_data.insert_one(json_data)
 

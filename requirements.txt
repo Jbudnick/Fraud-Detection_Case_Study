@@ -1,7 +1,8 @@
 Flask
+numpy
 pandas
 sklearn
-numpy
 joblib
-pickle
 BeautifulSoup
+pymongo
+requests

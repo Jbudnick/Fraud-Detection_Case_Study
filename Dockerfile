@@ -10,6 +10,8 @@ COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
+RUN pip install --upgrade pip
+
 RUN pip install -r requirements.txt
 
 COPY . /app
@@ -17,5 +19,7 @@ COPY . /app
 EXPOSE 8080
 
 ENTRYPOINT [ "python" ]
+
+CMD [ "src/build_model.py" ]
 
 CMD [ "app.py" ]
