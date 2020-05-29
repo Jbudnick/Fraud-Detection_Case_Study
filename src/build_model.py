@@ -72,9 +72,10 @@ if __name__ == "__main__":
     # Assemble pipeline
     preprocessor = ColumnTransformer(
         transformers=[
-            ('text', TfidfVectorizer(), 'description'),
+            ('text', TfidfVectorizer(stop_words ='english'), 'description'),
             ('category', OneHotEncoder(handle_unknown='ignore'), one_hot_cols),
         ],
+        remainder='passthrough'
     )
     pipe = Pipeline(
         steps=[

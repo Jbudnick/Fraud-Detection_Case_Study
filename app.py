@@ -11,41 +11,22 @@ import requests
 from src.feature_engineering import clean_pipeline
 from src.predict import predict_one
 
-#Web Scraping data will be stored in MongoDB
+
+app = Flask(__name__)
 client = MongoClient('localhost', 27017)
 db = client['web_scraped']
 table = db['new_data_pt']
 
-# from build_model import update_df_with_new
-# client.web_scraping.new_data.find()
-
-PORT = 8080
-app = Flask(__name__)
-REGISTER_URL = "http://50.17.242.215:80"
-DATA = []
-TIMESTAMP = []
-
-
+# home page
 @app.route('/')
-def welcome():
-    return 'Welcome'
+def index():
+    return render_template('index.html')
 
+@app.route('/test')
+def test():
+    return render_template('test.html')
 
-@app.route('/score', methods=['POST'])
-def score():
-    '''
-    Return score from prediction script (import script as module and call functions therein)
-    '''
-    DATA.append(json.dumps(request.json, sort_keys=True,
-                           indent=4, separators=(',', ': ')))
-    TIMESTAMP.append(time.time())
-    return ""
-
-@app.route('/hello', methods = ['GET'])
-def hello_world():
-    return 'Hello, World!'
-
-@app.route('/update_data', methods = ['GET'])
+@app.route('/stream_data', methods = ['GET'])
 def get_data():
     '''
     Return new data through webscraping
@@ -77,59 +58,32 @@ def get_data():
     json_data['prediction_timestamp'] = int(time.time())
 
     if db.new_data.count_documents({"object_id": json_data['object_id']}) == 0:
-        db.new_data.insert_one(json_data)
         db_add_string = f"Added to DB with object_id: {json_data['object_id']}"
     else:
         db_add_string = f"Object already in DB with object_id: {json_data['object_id']}"
+        db.new_data.delete_one({"object_id": json_data['object_id']})
 
-    header = "<h1>Streaming Data</h1>"
-    event_details = f"Current Event: {json_data['name']}<br>Current Org.: {json_data['org_name']}<br>Country: {json_data['country']}"
-    pred_string = f"Prediction: {pred_dict[pred]}<br>Probability of Fraud: {round(prob, 2)}<br>Risk: {risk}"
+    db.new_data.insert_one(json_data)
 
-    link_str = "<a href='../view_data'>View Recent Data...</a>"
+    data_dict = {
+        "Event_Name": json_data['name'],
+        "Event_Org": json_data['org_name'],
+        "Event_Country": json_data['country'],
+        "Prediction": pred_dict[pred],
+        "Fraud_Probability": round(prob, 2),
+        "Fraud_Risk": risk
+    }
 
-    return header + "<br>" + event_details + "<br><br>" + pred_string + "<br><br>" + db_add_string + "<br><br>" + link_str
+    return render_template('stream_data.html', data=data_dict, db_add_string=db_add_string)
 
-@app.route('/check')
-def check():
-    line1 = "Number of data points: {0}".format(len(DATA))
-    if DATA and TIMESTAMP:
-        dt = datetime.fromtimestamp(TIMESTAMP[-1])
-        data_time = dt.strftime('%Y-%m-%d %H:%M:%S')
-        line2 = "Latest datapoint received at: {0}".format(data_time)
-        line3 = DATA[-1]
-        output = "{0}\n\n{1}\n\n{2}".format(line1, line2, line3)
-    else:
-        output = line1
-    return output, 200, {'Content-Type': 'text/css; charset=utf-8'}
 
 @app.route('/view_data')
 def view_data():
     data = db.new_data.find({"object_id": {"$exists": True}}).sort([("prediction_timestamp", -1)]).limit(10)
     df_results = pd.DataFrame(data, columns=['prediction', 'prediction_probability', 'fraud_risk', 'object_id', 'name', 'email_domain']).round(2)
-    
-    link_str = "<a href='../update_data'>Stream More Data...</a>"
-    
-    header = "<h1>View Recent Data</h1>"
-    
-    return header + "<br>" + df_results.to_html(justify='left') + "<br><br>" + link_str
-
-def register_for_ping(ip, port):
-    registration_data = {'ip': ip, 'port': port}
-    requests.post(REGISTER_URL, data=registration_data)
+    df_results.columns = ['Prediction', 'Fraud Probability', 'Fraud Risk', 'Event ID', 'Event Name', 'Email Domain']
+    return render_template('view_data.html', data=df_results.to_html(index=False, justify='left', border=2, classes='table table-hover', header="true"))
 
 
 if __name__ == '__main__':
-    # Register for pinging service ( Can't get pinging service to work - need help)
-
-    '''
-    ip_address = socket.gethostbyname(socket.gethostname())
-    print("attempting to register {}:{}".format(ip_address, PORT))
-    register_for_ping(ip_address, str(PORT))
-
-    '''
-
-    # Start Flask app
-    # Connect to database once
-    # Unpickle model once
-    app.run(host='0.0.0.0', port=PORT, debug=True)
+    app.run(host='0.0.0.0', port=8080, threaded=True)
